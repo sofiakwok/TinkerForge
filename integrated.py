@@ -8,6 +8,8 @@ UID_IR = "LsN"
 UID_PTC= "xyz"
 UID_voltage = "dsdds"
 
+PTC_temperature = 0
+
 import cv2
 import numpy
 
@@ -30,11 +32,12 @@ def cb_high_contrast_image(image):
 
 # Callback function for object temperature callback
 def cb_object_temperature(temperature):
-    print("Object Temperature: " + str(temperature/10.0) + " °C")
+    print("PTC Temperature: " + str(temperature/10.0) + " °C")
+    PTC_temperature = temperature
 
 # Callback function for temperature callback
 def cb_temperature(temperature):
-    print("Temperature: " + str(temperature/100.0) + " °C")
+    print("IR Temperature: " + str(temperature/100.0) + " °C")
 
 if __name__ == "__main__":
     ipcon = IPConnection() # Create IP connection
@@ -62,7 +65,9 @@ if __name__ == "__main__":
 
     iao = BrickletIndustrialAnalogOutV2(UID, ipcon) # Create device object
     # Set output current to 4.5mA
-    iao.set_current(4500)
+    goal_temp = 50
+    current_diff = (goal_temp - PTC_temperature)*100
+    iao.set_current(current_diff)
     iao.set_enabled(True)
 
 
