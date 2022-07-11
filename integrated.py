@@ -64,10 +64,10 @@ if __name__ == "__main__":
     ptc.set_temperature_callback_configuration(1000, False, "x", 0, 0)
 
     iao = BrickletIndustrialAnalogOutV2(UID, ipcon) # Create device object
-    # Set output current to 4.5mA
-    goal_temp = 50
-    current_diff = (goal_temp - PTC_temperature)*100
-    iao.set_current(current_diff)
+    goal_temp = 37 #celsius
+    current_diff = abs((goal_temp - PTC_temperature)*100)
+    iao.set_current(current_diff) #in mA
+    print(["current_diff: ", current_diff])
     iao.set_enabled(True)
 
 
