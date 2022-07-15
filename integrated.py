@@ -3,7 +3,7 @@
 
 HOST = "localhost"
 PORT = 4223
-UID_thermal = "RX3" # Change XYZ to the UID of your Thermal Imaging Bricklet
+UID_thermal = "RX3"
 UID_IR = "LsN"
 UID_PTC= "xyz"
 UID_voltage = "dsdds"
