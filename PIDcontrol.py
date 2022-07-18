@@ -9,7 +9,7 @@ UID_PTC= "TMz"
 UID_motor = "6EjgEJ"
 
 global PTC_temperature
-goal_temp = 29 #room temp: 25
+goal_temp = 32 #room temp: 25
 
 import cv2
 import numpy
@@ -22,7 +22,7 @@ from tinkerforge.brick_dc import BrickDC
 from tinkerforge.bricklet_thermal_imaging import BrickletThermalImaging
 
 from simple_pid import PID
-pid = PID(1, 0.1, 0.1, setpoint= goal_temp)
+pid = PID(1, 0.1, 0.1, setpoint = goal_temp)
 
 # Callback function for object temperature callback
 def cb_object_temperature(temperature):
@@ -35,16 +35,14 @@ def cb_temperature(temperature):
     #print("PTC Temperature: " + str(temperature/100.0) + " °C") 
     PTC_temperature = temperature/100.0
 
-# Use velocity reached callback to control temperature
-def cb_velocity_reached(velocity, dc):
-    global PTC_temperature
-
     v = PTC_temperature
     control = pid(v)*1000
     print("control: " + str(control))
     if -9000 > control or control > 9000:
         control = 8000 * numpy.sign(control)
     dc.set_velocity(control)
+
+    
 
 if __name__ == "__main__":
     ipcon = IPConnection() # Create IP connection
@@ -53,23 +51,19 @@ if __name__ == "__main__":
     ipcon.connect(HOST, PORT) # Connect to brickd
     # Don't use device before ipcon is connected
 
-    ptc = BrickletIndustrialPTC(UID_PTC, ipcon) # Create device object
-    # Register temperature callback to function cb_temperature
-    ptc.register_callback(ptc.CALLBACK_TEMPERATURE, cb_temperature)
-    # Set period for temperature callback to 1s (1000ms)
-    ptc.set_temperature_callback_configuration(200, False, "x", 0, 0)
-
     dc = BrickDC(UID_motor, ipcon) 
     print("setting up DC")
     dc.set_drive_mode(dc.DRIVE_MODE_DRIVE_COAST)
     dc.set_pwm_frequency(10000) # Use PWM frequency of 10 kHz
     dc.set_acceleration(500) 
-    dc.set_velocity(5000)
-    dc.set_current_velocity_period(500)
-    # Register velocity reached callback to function cb_current_velocity
-    dc.register_callback(dc.CALLBACK_CURRENT_VELOCITY,
-                         lambda x: cb_velocity_reached(x, dc))
+    dc.set_velocity(100)
     dc.enable()
+
+    ptc = BrickletIndustrialPTC(UID_PTC, ipcon) # Create device object
+    # Register temperature callback to function cb_temperature
+    ptc.register_callback(ptc.CALLBACK_TEMPERATURE, cb_temperature)
+    # Set period for temperature callback to 1s (1000ms)
+    ptc.set_temperature_callback_configuration(200, False, "x", 0, 0)
 
     input("Press enter key to exit\n") # Use raw_input() in Python 2
 
