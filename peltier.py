@@ -38,7 +38,11 @@ def cb_velocity_reached(velocity, dc):
 
     goal_temp = 29.0 #celsius
     diff = goal_temp - PTC_temperature 
-    motor_command = 6000*numpy.sign(diff) + 200*(diff)
+    print('temperature difference: ' + str(diff))
+    if abs(diff) > 4.0:
+        motor_command = 7000*numpy.sign(diff) + 200*(diff)
+    else:
+        motor_command = 4000*numpy.sign(diff) + 50*(diff)
     print('motor command: ' + str(motor_command))
     if -9000 > motor_command or motor_command > 9000:
         motor_command = 8000 * numpy.sign(diff)
