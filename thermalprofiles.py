@@ -29,7 +29,6 @@ pid = PID(1, 0.1, 0.1, setpoint = goal_temp)
 #1, 0.1, 0.1: 30 seconds
 #1, 0.1, 0.15: 40 seconds
 
-
 # Callback function for object temperature callback
 def cb_object_temperature(temperature):
     print("IR Temperature: " + str(temperature/10.0) + " °C")
@@ -38,8 +37,21 @@ def cb_object_temperature(temperature):
 def cb_temperature(temperature):
     global PTC_temperature
 
-    #print("PTC Temperature: " + str(temperature/100.0) + " °C") 
+    mode = 2
+
+    print("PTC Temperature: " + str(temperature/100.0) + " °C") 
     PTC_temperature = temperature/100.0
+
+    with open('71922.txt', 'a') as f:
+        f.write('\n')
+        f.write(str(PTC_temperature))
+        f.close()
+
+    if mode == 1:
+        goal_temp = 25
+    else:
+        goal_temp = 29
+    pid = PID(1, 0.2, 0.1, setpoint = goal_temp)
 
     v = PTC_temperature
     control = pid(v)*1000
@@ -78,7 +90,7 @@ if __name__ == "__main__":
     # Register temperature callback to function cb_temperature
     ptc.register_callback(ptc.CALLBACK_TEMPERATURE, cb_temperature)
     # Set period for temperature callback to 1s (1000ms)
-    ptc.set_temperature_callback_configuration(10, False, "x", 0, 0)
+    ptc.set_temperature_callback_configuration(100, False, "x", 0, 0)
 
     input("Press enter key to exit\n") # Use raw_input() in Python 2
 
