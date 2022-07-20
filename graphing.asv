@@ -2,13 +2,12 @@ filename = Untitled1;
 
 time = filename.time - filename.time(1);
 
-goal_temp = 25;
+goal_temp = 25
 
 figure;
-plot(time, linspace(goal_temp, goal_temp, height(time)), 'r')
+plot(time, linspace(goal_temp, goal_temp, height(time)), '-')
 hold on
-plot(time, linspace(goal_temp + 0.1, goal_temp + 0.1, height(time)), '--r')
-plot(time, linspace(goal_temp - 0.1, goal_temp - 0.1, height(time)), '--r')
+plot(time, linspace(goal_temp + 0., 25, height(time)), '-')
 plot(time, filename.temp)
 ylabel("Temperature (C)", 'Fontsize', 12)
 yyaxis right

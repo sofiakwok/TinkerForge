@@ -9,7 +9,7 @@ UID_motor = "6EjgEJ"
 UID_analog = "MQJ"
 
 global PTC_temperature
-goal_temp = 25 #room temp: 25
+global t0
 
 import cv2
 import numpy
@@ -23,7 +23,18 @@ from tinkerforge.bricklet_thermal_imaging import BrickletThermalImaging
 from tinkerforge.bricklet_industrial_analog_out_v2 import BrickletIndustrialAnalogOutV2
 
 from simple_pid import PID
+
+mode = 1
+if mode == 1:
+    goal_temp = 25
+else:
+    goal_temp = 29
+        
 pid = PID(1, 0.1, 0.1, setpoint = goal_temp)
+
+t0 = time.time()
+with open('data/' + str(t0) + '.txt', 'a') as f:
+    f.write('time temp control')
 
 #2, 0.1, 0.15: 55 seconds
 #1, 0.1, 0.1: 30 seconds
@@ -36,29 +47,24 @@ def cb_object_temperature(temperature):
 # Callback function for temperature callback
 def cb_temperature(temperature):
     global PTC_temperature
+    global t0
 
     mode = 2
 
     print("PTC Temperature: " + str(temperature/100.0) + " °C") 
     PTC_temperature = temperature/100.0
 
-    with open('71922.txt', 'a') as f:
-        f.write('\n')
-        f.write(str(PTC_temperature))
-        f.close()
-
-    if mode == 1:
-        goal_temp = 25
-    else:
-        goal_temp = 29
-    pid = PID(1, 0.2, 0.1, setpoint = goal_temp)
-
     v = PTC_temperature
     control = pid(v)*1000
     print("control: " + str(control))
     if -9000 > control or control > 9000:
-        control = 8000 * numpy.sign(control)
+        control = 9000 * numpy.sign(control)
     dc.set_velocity(control)
+
+    with open('data/' + str(t0) + '.txt', 'a') as f:
+        f.write('\n')
+        f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
+        f.close()
     
 
 if __name__ == "__main__":
