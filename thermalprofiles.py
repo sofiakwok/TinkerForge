@@ -22,16 +22,6 @@ from tinkerforge.brick_dc import BrickDC
 from tinkerforge.bricklet_thermal_imaging import BrickletThermalImaging
 from tinkerforge.bricklet_industrial_analog_out_v2 import BrickletIndustrialAnalogOutV2
 
-from simple_pid import PID
-
-mode = 1
-if mode == 1:
-    goal_temp = 25
-else:
-    goal_temp = 29
-        
-pid = PID(1, 0.1, 0.1, setpoint = goal_temp)
-
 t0 = time.time()
 with open('data/' + str(t0) + '.txt', 'a') as f:
     f.write('time temp control')
@@ -49,16 +39,15 @@ def cb_temperature(temperature):
     global PTC_temperature
     global t0
 
-    mode = 2
-
     print("PTC Temperature: " + str(temperature/100.0) + " °C") 
     PTC_temperature = temperature/100.0
+    goal_temperature = 35
 
-    v = PTC_temperature
-    control = pid(v)*1000
-    print("control: " + str(control))
-    if -9000 > control or control > 9000:
-        control = 9000 * numpy.sign(control)
+    if PTC_temperature >= goal_temperature:
+        control = 0
+    else:
+        control = 30000
+
     dc.set_velocity(control)
 
     with open('data/' + str(t0) + '.txt', 'a') as f:
@@ -78,7 +67,7 @@ if __name__ == "__main__":
     print("setting up DC")
     dc.set_drive_mode(dc.DRIVE_MODE_DRIVE_COAST)
     dc.set_pwm_frequency(10000) # Use PWM frequency of 10 kHz
-    dc.set_acceleration(500) 
+    dc.set_acceleration(10000) 
     dc.set_velocity(100)
     dc.enable()
 

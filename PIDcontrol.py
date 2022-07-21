@@ -9,7 +9,7 @@ UID_motor = "6EjgEJ"
 UID_analog = "MQJ"
 
 global PTC_temperature
-goal_temp = 25 #room temp: 25
+global t0
 
 import cv2
 import numpy
@@ -23,12 +23,22 @@ from tinkerforge.bricklet_thermal_imaging import BrickletThermalImaging
 from tinkerforge.bricklet_industrial_analog_out_v2 import BrickletIndustrialAnalogOutV2
 
 from simple_pid import PID
-pid = PID(1, 0.1, 0.1, setpoint = goal_temp)
+
+mode = 2
+if mode == 1:
+    goal_temp = 25
+else:
+    goal_temp = 32
+        
+pid = PID(2, 0.4, 0.1, setpoint = goal_temp)
+
+t0 = time.time()
+with open('data/' + str(t0) + '.txt', 'a') as f:
+    f.write('time temp control')
 
 #2, 0.1, 0.15: 55 seconds
 #1, 0.1, 0.1: 30 seconds
 #1, 0.1, 0.15: 40 seconds
-
 
 # Callback function for object temperature callback
 def cb_object_temperature(temperature):
@@ -37,16 +47,22 @@ def cb_object_temperature(temperature):
 # Callback function for temperature callback
 def cb_temperature(temperature):
     global PTC_temperature
+    global t0
 
-    #print("PTC Temperature: " + str(temperature/100.0) + " °C") 
+    print("PTC Temperature: " + str(temperature/100.0) + " °C") 
     PTC_temperature = temperature/100.0
 
     v = PTC_temperature
     control = pid(v)*1000
     print("control: " + str(control))
-    if -9000 > control or control > 9000:
-        control = 8000 * numpy.sign(control)
+    if -30000 > control or control > 30000:
+        control = 30000 * numpy.sign(control)
     dc.set_velocity(control)
+
+    with open('data/' + str(t0) + '.txt', 'a') as f:
+        f.write('\n')
+        f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
+        f.close()
     
 
 if __name__ == "__main__":
@@ -60,7 +76,7 @@ if __name__ == "__main__":
     print("setting up DC")
     dc.set_drive_mode(dc.DRIVE_MODE_DRIVE_COAST)
     dc.set_pwm_frequency(10000) # Use PWM frequency of 10 kHz
-    dc.set_acceleration(500) 
+    dc.set_acceleration(10000) 
     dc.set_velocity(100)
     dc.enable()
 
@@ -78,7 +94,7 @@ if __name__ == "__main__":
     # Register temperature callback to function cb_temperature
     ptc.register_callback(ptc.CALLBACK_TEMPERATURE, cb_temperature)
     # Set period for temperature callback to 1s (1000ms)
-    ptc.set_temperature_callback_configuration(10, False, "x", 0, 0)
+    ptc.set_temperature_callback_configuration(100, False, "x", 0, 0)
 
     input("Press enter key to exit\n") # Use raw_input() in Python 2
 
