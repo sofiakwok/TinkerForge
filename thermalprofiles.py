@@ -10,6 +10,7 @@ UID_analog = "MQJ"
 
 global PTC_temperature
 global t0
+global temp0
 global mode
 
 import cv2
@@ -27,6 +28,10 @@ t0 = time.time()
 with open('data/' + str(t0) + '.txt', 'a') as f:
     f.write('time temp control')
 
+from simple_pid import PID
+
+pid = PID(1, 0.1, 0.1, setpoint = 25)
+
 #2, 0.1, 0.15: 55 seconds
 #1, 0.1, 0.1: 30 seconds
 #1, 0.1, 0.15: 40 seconds
@@ -40,25 +45,25 @@ def cb_temperature(temperature):
     global PTC_temperature
     global t0
     global mode
+    global temp0
 
     #print("PTC Temperature: " + str(temperature/100.0) + " °C") 
     PTC_temperature = temperature/100.0
     goal_temperature = 35
 
-    if float(time.time()) - t0 < 5.0:
-        mode = 0
-    else:
-        mode = 1
+    run_time = (goal_temperature - temp0)/1.37
 
-    if mode == 0:
-        print("to 35") #overshoots by ~3 degrees
-        if PTC_temperature >= goal_temperature:
-            control = 0
-        else:
-            control = 30000
+    if float(time.time()) - t0 < run_time and PTC_temperature + 5 < goal_temperature:
+        control = 30000
     else:
-        control = 5000
+        control = 0
+        v = PTC_temperature
+        control = pid(v)*1000     
 
+    print("control: " + str(control))
+    if -30000 > control or control > 30000:
+        control = 30000 * numpy.sign(control)
+    dc.set_velocity(control)
     dc.set_velocity(control)
 
     with open('data/' + str(t0) + '.txt', 'a') as f:
@@ -68,7 +73,7 @@ def cb_temperature(temperature):
     
 
 if __name__ == "__main__":
-    global mode
+    global temp0
 
     ipcon = IPConnection() # Create IP connection
     #ti = BrickletThermalImaging(UID_thermal, ipcon) # Create device object
@@ -95,10 +100,13 @@ if __name__ == "__main__":
     iao.set_enabled(True)
 
     ptc = BrickletIndustrialPTC(UID_PTC, ipcon) # Create device object
+    temp0 = ptc.get_temperature()/100
+    print("inital temperature: " + str(temp0))
     # Register temperature callback to function cb_temperature
     ptc.register_callback(ptc.CALLBACK_TEMPERATURE, cb_temperature)
     # Set period for temperature callback to 1s (1000ms)
     ptc.set_temperature_callback_configuration(100, False, "x", 0, 0)
+    
 
     input("Press enter key to exit\n") # Use raw_input() in Python 2
 
