@@ -10,6 +10,7 @@ UID_analog = "MQJ"
 
 global PTC_temperature
 global t0
+global mode
 
 import cv2
 import numpy
@@ -38,15 +39,25 @@ def cb_object_temperature(temperature):
 def cb_temperature(temperature):
     global PTC_temperature
     global t0
+    global mode
 
-    print("PTC Temperature: " + str(temperature/100.0) + " °C") 
+    #print("PTC Temperature: " + str(temperature/100.0) + " °C") 
     PTC_temperature = temperature/100.0
     goal_temperature = 35
 
-    if PTC_temperature >= goal_temperature:
-        control = 0
+    if float(time.time()) - t0 < 5.0:
+        mode = 0
     else:
-        control = 30000
+        mode = 1
+
+    if mode == 0:
+        print("to 35") #overshoots by ~3 degrees
+        if PTC_temperature >= goal_temperature:
+            control = 0
+        else:
+            control = 30000
+    else:
+        control = 5000
 
     dc.set_velocity(control)
 
@@ -57,6 +68,8 @@ def cb_temperature(temperature):
     
 
 if __name__ == "__main__":
+    global mode
+
     ipcon = IPConnection() # Create IP connection
     #ti = BrickletThermalImaging(UID_thermal, ipcon) # Create device object
 
