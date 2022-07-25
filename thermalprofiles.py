@@ -52,7 +52,6 @@ def cb_temperature(temperature):
     PTC_temperature = temperature/100.0
 
 def squarewave():
-    t0 = time.time()
     t = 0
 
     while t < 25:
@@ -78,7 +77,6 @@ def squarewave():
             f.close()
 
 def ramp():
-    t0 = time.time()
     t = 0
 
     while t < 25:
@@ -102,7 +100,6 @@ def ramp():
             f.close()
 
 def peaks():
-    t0 = time.time()
     t = 0
 
     while t < 35:
@@ -114,7 +111,7 @@ def peaks():
         if PTC_temperature + 5 < goal_temperature:
             control = 30000   
         else:
-            control = -30000
+            control = 0
 
         if -30000 > control or control > 30000:
             control = 30000 * numpy.sign(control)
@@ -161,10 +158,9 @@ if __name__ == "__main__":
     # Set period for temperature callback to 1s (1000ms)
     ptc.set_temperature_callback_configuration(100, False, "x", 0, 0)
 
-    mode = 1
+    mode = 2
 
     if mode == 0:
-        print("square wave")
         squarewave()
     elif mode == 1:
         ramp()
