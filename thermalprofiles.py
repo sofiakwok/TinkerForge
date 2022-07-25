@@ -9,6 +9,7 @@ UID_motor = "6EjgEJ"
 UID_analog = "MQJ"
 
 global PTC_temperature
+global IR_temperature
 global t0
 global temp0
 global mode
@@ -25,38 +26,34 @@ from tinkerforge.brick_dc import BrickDC
 from tinkerforge.bricklet_thermal_imaging import BrickletThermalImaging
 from tinkerforge.bricklet_industrial_analog_out_v2 import BrickletIndustrialAnalogOutV2
 
+#creating text file with three variable header for importing into Matlab
 t0 = time.time()
 with open('data/' + str(t0) + '.txt', 'a') as f:
     f.write('time temp control')
 
-from simple_pid import PID
-
-pid = PID(1, 0.1, 0.1, setpoint = 25)
-
-#2, 0.1, 0.15: 55 seconds
-#1, 0.1, 0.1: 30 seconds
-#1, 0.1, 0.15: 40 seconds
-
 # Callback function for object temperature callback
 def cb_object_temperature(temperature):
-    print("IR Temperature: " + str(temperature/10.0) + " °C")
+    #print("IR Temperature: " + str(temperature/10.0) + " °C")
+    global IR_temperature
+
+    IR_temperature = temperature/10.0
 
 # Callback function for temperature callback
 def cb_temperature(temperature):
     global PTC_temperature
-    global t0
-    global mode
-    global temp0
 
-    print("PTC Temperature: " + str(temperature/100.0) + " °C") 
+    #print("PTC Temperature: " + str(temperature/100.0) + " °C") 
     PTC_temperature = temperature/100.0
 
-def squarewave():
+#square wave thermal profile code
+def squarewave(heating):
     t = 0
 
     while t < 25:
+        #updating elapsed time
         t = time.time() - t0
         print("t: " + str(t))
+
         goal_temperature = 38
         PTC_temperature = ptc.get_temperature()/100
 
@@ -67,21 +64,26 @@ def squarewave():
         else:
             control = -30000
 
+        #capping motor output
         if -30000 > control or control > 30000:
             control = 30000 * numpy.sign(control)
         dc.set_velocity(control)
 
+        #writing to text file
         with open('data/' + str(t0) + '.txt', 'a') as f:
             f.write('\n')
             f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
             f.close()
 
-def ramp():
+#ramp thermal profile code
+def ramp(heating):
     t = 0
 
     while t < 25:
+        #updating time elapsed
         t = time.time() - t0
         print("t: " + str(t))
+
         goal_temperature = 38
         PTC_temperature = ptc.get_temperature()/100
 
@@ -90,33 +92,40 @@ def ramp():
         else:
             control = -30000
 
+        #capping motor output
         if -30000 > control or control > 30000:
             control = 30000 * numpy.sign(control)
         dc.set_velocity(control)
 
+        #writing to text file
         with open('data/' + str(t0) + '.txt', 'a') as f:
             f.write('\n')
             f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
             f.close()
 
-def peaks():
+#double peak thermal profile code
+def peaks(heating):
     t = 0
 
     while t < 35:
+        #updating time elapsed
         t = time.time() - t0
         print("t: " + str(t))
-        goal_temperature = 38
+
+        goal_temperature = 25 + 13*(-1)**heating
         PTC_temperature = ptc.get_temperature()/100
 
         if PTC_temperature + 5 < goal_temperature:
-            control = 30000   
+            control = 30000
         else:
             control = 0
 
+        #capping motor output at 30000
         if -30000 > control or control > 30000:
             control = 30000 * numpy.sign(control)
         dc.set_velocity(control)
 
+        #writing data to text file in data folder
         with open('data/' + str(t0) + '.txt', 'a') as f:
             f.write('\n')
             f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
@@ -156,16 +165,16 @@ if __name__ == "__main__":
     # Register temperature callback to function cb_temperature
     ptc.register_callback(ptc.CALLBACK_TEMPERATURE, cb_temperature)
     # Set period for temperature callback to 1s (1000ms)
-    ptc.set_temperature_callback_configuration(100, False, "x", 0, 0)
+    ptc.set_temperature_callback_configuration(2000, False, "x", 0, 0)
 
+    heating = 0
     mode = 2
-
     if mode == 0:
-        squarewave()
+        squarewave(heating)
     elif mode == 1:
-        ramp()
+        ramp(heating)
     elif mode == 2:
-        peaks()
+        peaks(heating)
     else:
         print("no mode")
 
