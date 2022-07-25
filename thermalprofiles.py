@@ -16,6 +16,7 @@ global mode
 import cv2
 import numpy
 import time
+import keyboard
 
 from tinkerforge.ip_connection import IPConnection
 from tinkerforge.bricklet_temperature_ir_v2 import BrickletTemperatureIRV2
@@ -47,30 +48,83 @@ def cb_temperature(temperature):
     global mode
     global temp0
 
-    #print("PTC Temperature: " + str(temperature/100.0) + " °C") 
+    print("PTC Temperature: " + str(temperature/100.0) + " °C") 
     PTC_temperature = temperature/100.0
-    goal_temperature = 35
 
-    run_time = (goal_temperature - temp0)/1.37
+def squarewave():
+    t0 = time.time()
+    t = 0
 
-    if float(time.time()) - t0 < run_time and PTC_temperature + 5 < goal_temperature:
-        control = 30000
-    else:
-        control = 0
-        v = PTC_temperature
-        control = pid(v)*1000     
+    while t < 25:
+        t = time.time() - t0
+        print("t: " + str(t))
+        goal_temperature = 38
+        PTC_temperature = ptc.get_temperature()/100
 
-    print("control: " + str(control))
-    if -30000 > control or control > 30000:
-        control = 30000 * numpy.sign(control)
-    dc.set_velocity(control)
-    dc.set_velocity(control)
+        if PTC_temperature + 5 < goal_temperature and t < 10:
+            control = 30000
+        elif t < 15:
+            control = 2300    
+        else:
+            control = -30000
 
-    with open('data/' + str(t0) + '.txt', 'a') as f:
-        f.write('\n')
-        f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
-        f.close()
-    
+        if -30000 > control or control > 30000:
+            control = 30000 * numpy.sign(control)
+        dc.set_velocity(control)
+
+        with open('data/' + str(t0) + '.txt', 'a') as f:
+            f.write('\n')
+            f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
+            f.close()
+
+def ramp():
+    t0 = time.time()
+    t = 0
+
+    while t < 25:
+        t = time.time() - t0
+        print("t: " + str(t))
+        goal_temperature = 38
+        PTC_temperature = ptc.get_temperature()/100
+
+        if PTC_temperature + 3 < goal_temperature and t < 15:
+            control = 5000   
+        else:
+            control = -30000
+
+        if -30000 > control or control > 30000:
+            control = 30000 * numpy.sign(control)
+        dc.set_velocity(control)
+
+        with open('data/' + str(t0) + '.txt', 'a') as f:
+            f.write('\n')
+            f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
+            f.close()
+
+def peaks():
+    t0 = time.time()
+    t = 0
+
+    while t < 35:
+        t = time.time() - t0
+        print("t: " + str(t))
+        goal_temperature = 38
+        PTC_temperature = ptc.get_temperature()/100
+
+        if PTC_temperature + 5 < goal_temperature:
+            control = 30000   
+        else:
+            control = -30000
+
+        if -30000 > control or control > 30000:
+            control = 30000 * numpy.sign(control)
+        dc.set_velocity(control)
+
+        with open('data/' + str(t0) + '.txt', 'a') as f:
+            f.write('\n')
+            f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
+            f.close()
+
 
 if __name__ == "__main__":
     global temp0
@@ -106,9 +160,19 @@ if __name__ == "__main__":
     ptc.register_callback(ptc.CALLBACK_TEMPERATURE, cb_temperature)
     # Set period for temperature callback to 1s (1000ms)
     ptc.set_temperature_callback_configuration(100, False, "x", 0, 0)
-    
 
-    input("Press enter key to exit\n") # Use raw_input() in Python 2
+    mode = 1
+
+    if mode == 0:
+        print("square wave")
+        squarewave()
+    elif mode == 1:
+        ramp()
+    elif mode == 2:
+        peaks()
+    else:
+        print("no mode")
+
 
     print("shutting down")
     dc.set_velocity(0) # Stop motor before disabling motor power
