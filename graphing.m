@@ -48,11 +48,12 @@ legend('Target Thermal Profile', 'Temperature', 'Motor Command')
 filename = Untitled;
 
 time = filename.time - filename.time(1);
-x = height(time) - 3075 - 1481;
+t1 = 3075;
+x = height(time) - t1 - 1481;
 
 goal_temp = 40;
 
-x = [linspace(filename.temp(1), goal_temp, 3075), linspace(goal_temp, goal_temp, 1481), ...
+x = [linspace(filename.temp(1), goal_temp, t1), linspace(goal_temp, goal_temp, 1481), ...
     linspace(goal_temp, filename.temp(1), x)];
 
 figure;
@@ -70,15 +71,21 @@ legend('Target Thermal Profile', 'Temperature', 'Motor Command')
 
 %% double wave shape
 
-filename = Untitled5;
+filename = Untitled1;
 
 time = filename.time - filename.time(1);
-x = height(time) - 8995;
+
+factor = 0.0032891089;
+t1 = 8.974/factor;
+t2 = 22.7694/factor;
+t3 = 28.884/factor;
+
+x = height(time) - t3 + 1;
 
 goal_temp = 40;
 
-x = [linspace(filename.temp(1), goal_temp, 3131), linspace(goal_temp, 30, 3841), ....
-    linspace(30, goal_temp, 2023), linspace(goal_temp, filename.temp(1), x)];
+x = [linspace(filename.temp(1), goal_temp, t1), linspace(goal_temp, 30, t2-t1), ....
+    linspace(30, goal_temp, t3-t2), linspace(goal_temp, filename.temp(1), x)];
 
 figure;
 plot(time, x)
