@@ -26,6 +26,8 @@ from tinkerforge.brick_dc import BrickDC
 from tinkerforge.bricklet_thermal_imaging import BrickletThermalImaging
 from tinkerforge.bricklet_industrial_analog_out_v2 import BrickletIndustrialAnalogOutV2
 
+from simple_pid import PID
+
 #creating text file with three variable header for importing into Matlab
 t0 = time.time()
 with open('data/' + str(t0) + '.txt', 'a') as f:
@@ -131,6 +133,28 @@ def peaks(heating):
             f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
             f.close()
 
+def starting_temp():
+    global temp0
+    global t0
+
+    pid = PID(1, 0.1, 0.1, setpoint = temp0)
+
+    while PTC_temperature != temp0:
+        v = PTC_temperature
+        control = pid(v)*1000
+        print("control: " + str(control))
+        if -30000 > control or control > 30000:
+            control = 30000 * numpy.sign(control)
+        dc.set_velocity(control)
+
+        with open('data/' + str(t0) + '.txt', 'a') as f:
+            f.write('\n')
+            f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
+            f.close()
+
+        if keyboard.is_pressed("enter"):
+            print("ending loop")
+            break
 
 if __name__ == "__main__":
     global temp0
@@ -161,7 +185,7 @@ if __name__ == "__main__":
 
     ptc = BrickletIndustrialPTC(UID_PTC, ipcon) # Create device object
     temp0 = ptc.get_temperature()/100
-    print("inital temperature: " + str(temp0))
+    #print("inital temperature: " + str(temp0))
     # Register temperature callback to function cb_temperature
     ptc.register_callback(ptc.CALLBACK_TEMPERATURE, cb_temperature)
     # Set period for temperature callback to 1s (1000ms)
@@ -178,6 +202,8 @@ if __name__ == "__main__":
         peaks(heating)
     else:
         print("no mode")
+
+    starting_temp()
 
     print("shutting down")
     dc.set_velocity(0) # Stop motor before disabling motor power

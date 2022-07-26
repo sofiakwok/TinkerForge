@@ -71,24 +71,25 @@ legend('Target Thermal Profile', 'Temperature', 'Motor Command')
 
 %% double wave shape
 
-filename = Untitled1;
+filename = Untitled;
 
 time = filename.time - filename.time(1);
 
 factor = 0.0032891089;
-t1 = 8.974/factor;
-t2 = 22.7694/factor;
+t1 = 10.8601/factor;
+t2 = 22.1502/factor;
 t3 = 28.884/factor;
-
-x = height(time) - t3 + 1;
+t4 = 35/factor;
 
 goal_temp = 40;
 
 x = [linspace(filename.temp(1), goal_temp, t1), linspace(goal_temp, 30, t2-t1), ....
-    linspace(30, goal_temp, t3-t2), linspace(goal_temp, filename.temp(1), x)];
+    linspace(30, goal_temp, t3-t2), linspace(goal_temp, filename.temp(1), t4-t3)];
+
+t = time(1:length(x));
 
 figure;
-plot(time, x)
+plot(t, x)
 hold on
 plot(time, filename.temp)
 ylabel("Temperature (C)", 'Fontsize', 12)
