@@ -54,15 +54,15 @@ def squarewave(heating):
         t = time.time() - t0
         print("t: " + str(t))
 
-        goal_temperature = 38
+        goal_temperature = 25 + 13*heating
         PTC_temperature = ptc.get_temperature()/100
 
-        if PTC_temperature + 5 < goal_temperature and t < 10:
-            control = 30000
+        if t < 5:
+            control = 30000*heating
         elif t < 15:
-            control = 2300    
+            control = 2300*heating   
         else:
-            control = -30000
+            control = -30000*heating
 
         #capping motor output
         if -30000 > control or control > 30000:
@@ -84,13 +84,13 @@ def ramp(heating):
         t = time.time() - t0
         print("t: " + str(t))
 
-        goal_temperature = 38
+        goal_temperature = 25 + 13*heating
         PTC_temperature = ptc.get_temperature()/100
 
-        if PTC_temperature + 3 < goal_temperature and t < 15:
-            control = 5000   
+        if t < 15:
+            control = 5000*heating  
         else:
-            control = -30000
+            control = -30000*heating
 
         #capping motor output
         if -30000 > control or control > 30000:
@@ -112,13 +112,13 @@ def peaks(heating):
         t = time.time() - t0
         print("t: " + str(t))
 
-        goal_temperature = 25 + 13*(-1)**heating
+        goal_temperature = 25 + 13*heating
         PTC_temperature = ptc.get_temperature()/100
 
-        if PTC_temperature + 5 < goal_temperature:
+        if PTC_temperature + 5*heating < goal_temperature:
             control = 30000
         else:
-            control = 0
+            control = -30000
 
         #capping motor output at 30000
         if -30000 > control or control > 30000:
@@ -167,7 +167,8 @@ if __name__ == "__main__":
     # Set period for temperature callback to 1s (1000ms)
     ptc.set_temperature_callback_configuration(2000, False, "x", 0, 0)
 
-    heating = 0
+    # 1 = heating, -1 = cooling
+    heating = 1
     mode = 2
     if mode == 0:
         squarewave(heating)
@@ -177,7 +178,6 @@ if __name__ == "__main__":
         peaks(heating)
     else:
         print("no mode")
-
 
     print("shutting down")
     dc.set_velocity(0) # Stop motor before disabling motor power
