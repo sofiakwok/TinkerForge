@@ -12,7 +12,6 @@ global PTC_temperature
 global IR_temperature
 global t0
 global temp0
-global mode
 
 import cv2
 import numpy
@@ -59,7 +58,7 @@ def squarewave(heating):
         goal_temperature = 25 + 13*heating
         PTC_temperature = ptc.get_temperature()/100
 
-        if t < 5:
+        if t < 5 or (t < 10 and goal_temperature < PTC_temperature):
             control = 30000*heating
         elif t < 15:
             control = 2300*heating   
