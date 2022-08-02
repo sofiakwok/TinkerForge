@@ -51,14 +51,14 @@ def squarewave(heating):
     t = 0
 
     if heating == -1:
-        goal_temperature = 15
+        goal_temperature = 16
         square_1 = -30000
-        square_2 = -30000
+        square_2 = -20000
         square_3 = 2500
     else:
         goal_temperature = 38
-        square_1 = 10000
-        square_2 = 1000
+        square_1 = 15000
+        square_2 = 3000
         square_3 = -20000
 
     while t < 25:
@@ -68,7 +68,12 @@ def squarewave(heating):
 
         PTC_temperature = ptc.get_temperature()/100
 
-        if t < 5 or (t < 10 and goal_temperature < PTC_temperature):
+        if heating == -1:
+            sign = PTC_temperature > goal_temperature
+        else:
+            sign = PTC_temperature + 3 < goal_temperature
+
+        if t < 5 or (t < 10 and sign):
             control = square_1
         elif t < 15:
             control = square_2
@@ -78,6 +83,8 @@ def squarewave(heating):
         #capping motor output
         if -30000 > control or control > 30000:
             control = 30000 * numpy.sign(control)
+
+        print("control: " + str(control))
         dc.set_velocity(control)
 
         #writing to text file
@@ -86,13 +93,18 @@ def squarewave(heating):
             f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
             f.close()
 
+        if keyboard.is_pressed("enter"):
+            print("ending loop")
+            break
+
 #ramp thermal profile code
 def ramp(heating):
     t = 0
+    global temp0
 
     if heating == -1:
-        ramp_1 = -21000
-        ramp_2 = 2000
+        ramp_1 = -20000
+        ramp_2 = 5000
     else:
         ramp_1 = 5000
         ramp_2 = -30000
@@ -104,10 +116,17 @@ def ramp(heating):
 
         PTC_temperature = ptc.get_temperature()/100
 
+        if heating == -1:
+            sign = PTC_temperature < temp0
+        else:
+            sign = PTC_temperature > temp0
+
         if t < 15:
             control = ramp_1  
-        else:
+        elif t > 15 and sign:
             control = ramp_2
+        else: 
+            control = 0
 
         #capping motor output
         if -30000 > control or control > 30000:
@@ -120,19 +139,22 @@ def ramp(heating):
             f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
             f.close()
 
+        if keyboard.is_pressed("enter"):
+            print("ending loop")
+            break
+
 #double peak thermal profile code
 def peaks(heating):
     t = 0
-    PTC_temperature = ptc.get_temperature()/100
 
     if heating == -1:
         goal_temperature = 18
         peak_1 = -30000
         peak_2 = 3000
     else:
-        goal_temperature = 38
-        peak_1 = 30000
-        peak_2 = -30000
+        goal_temperature = 33
+        peak_1 = 20000
+        peak_2 = -20000
 
     counter = 0
 
@@ -146,7 +168,7 @@ def peaks(heating):
         if heating == -1:
             sign = PTC_temperature > goal_temperature
         else:
-            sign = PTC_temperature + 5*heating < goal_temperature
+            sign = PTC_temperature + 5 < goal_temperature
 
         if sign and t < 20:
             control = peak_1
@@ -163,6 +185,10 @@ def peaks(heating):
             f.write('\n')
             f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
             f.close()
+
+        if keyboard.is_pressed("enter"):
+            print("ending loop")
+            break
 
 def starting_temp():
     global temp0
@@ -223,7 +249,7 @@ if __name__ == "__main__":
     ptc.set_temperature_callback_configuration(2000, False, "x", 0, 0)
 
     # 1 = heating, -1 = cooling
-    heating = -1
+    heating = 1
     mode = 2
     if mode == 0:
         squarewave(heating)

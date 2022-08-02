@@ -45,24 +45,25 @@ legend('Target Thermal Profile', 'Temperature', 'Motor Command')
 
 %% square wave shape
 
-filename = Untitled1;
+filename = Untitled8;
 
 time = filename.time - filename.time(1);
-t1 = 3075;
-x = 7000 - t1 - 1481;
+t1 = 6583;
+square_time = 7000;
+x = height(time) - t1 - square_time;
 
-goal_temp = 16;
+goal_temp = 35;
 
-x = [linspace(filename.temp(1), goal_temp, t1), linspace(goal_temp, goal_temp, 1481), ...
+x = [linspace(filename.temp(1), goal_temp, t1), linspace(goal_temp, goal_temp, square_time), ...
     linspace(goal_temp, filename.temp(1), x)];
 
 figure;
-plot(time(1:7000), x(1:7000))
+plot(time, x)
 hold on
-plot(time(1:7000), filename.temp(1:7000))
+plot(time, filename.temp)
 ylabel("Temperature (C)", 'Fontsize', 12)
 yyaxis right
-plot(time(1:7000), filename.control(1:7000))
+plot(time, filename.control)
 ylim([-35000, 35000])
 xlabel("Time (s)", 'Fontsize', 12)
 ylabel("Motor Command", "Fontsize", 12)
@@ -71,11 +72,11 @@ legend('Target Thermal Profile', 'Temperature', 'Motor Command')
 
 %% double wave shape
 
-filename = Untitled4;
+filename = Untitled11;
 
 time = filename.time - filename.time(1);
 
-factor = 0.0013632;
+factor = 0.0033355;
 t1 = 7.87/factor;
 t2 = 13.44/factor;
 t3 = 18.1404/factor;
@@ -103,10 +104,10 @@ legend('Target Thermal Profile', 'Temperature', 'Motor Command')
 
 %% ramp shape
 
-filename = Untitled2;
+filename = Untitled7;
 
 time = filename.time - filename.time(1);
-peak = 5094;
+peak = 12108;
 x = height(time) - peak;
 
 goal_temp = 15;
