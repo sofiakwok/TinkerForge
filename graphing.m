@@ -45,24 +45,24 @@ legend('Target Thermal Profile', 'Temperature', 'Motor Command')
 
 %% square wave shape
 
-filename = Untitled;
+filename = Untitled1;
 
 time = filename.time - filename.time(1);
 t1 = 3075;
-x = height(time) - t1 - 1481;
+x = 7000 - t1 - 1481;
 
-goal_temp = 40;
+goal_temp = 16;
 
 x = [linspace(filename.temp(1), goal_temp, t1), linspace(goal_temp, goal_temp, 1481), ...
     linspace(goal_temp, filename.temp(1), x)];
 
 figure;
-plot(time, x)
+plot(time(1:7000), x(1:7000))
 hold on
-plot(time, filename.temp)
+plot(time(1:7000), filename.temp(1:7000))
 ylabel("Temperature (C)", 'Fontsize', 12)
 yyaxis right
-plot(time, filename.control)
+plot(time(1:7000), filename.control(1:7000))
 ylim([-35000, 35000])
 xlabel("Time (s)", 'Fontsize', 12)
 ylabel("Motor Command", "Fontsize", 12)

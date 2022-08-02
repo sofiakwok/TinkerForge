@@ -50,20 +50,30 @@ def cb_temperature(temperature):
 def squarewave(heating):
     t = 0
 
+    if heating == -1:
+        goal_temperature = 15
+        square_1 = -30000
+        square_2 = -30000
+        square_3 = 2500
+    else:
+        goal_temperature = 38
+        square_1 = 20000
+        square_2 = 2300
+        square_3 = -20000
+
     while t < 25:
         #updating elapsed time
         t = time.time() - t0
         print("t: " + str(t))
 
-        goal_temperature = 25 + 13*heating
         PTC_temperature = ptc.get_temperature()/100
 
         if t < 5 or (t < 10 and goal_temperature < PTC_temperature):
-            control = 30000*heating
+            control = square_1
         elif t < 15:
-            control = 2300*heating   
+            control = square_2
         else:
-            control = -30000*heating
+            control = square_3
 
         #capping motor output
         if -30000 > control or control > 30000:
@@ -80,18 +90,24 @@ def squarewave(heating):
 def ramp(heating):
     t = 0
 
+    if heating == -1:
+        ramp_1 = -22000
+        ramp_2 = 2000
+    else:
+        ramp_1 = 5000
+        ramp_2 = -30000
+
     while t < 25:
         #updating time elapsed
         t = time.time() - t0
         print("t: " + str(t))
 
-        goal_temperature = 25 + 13*heating
         PTC_temperature = ptc.get_temperature()/100
 
         if t < 15:
-            control = 5000*heating  
+            control = ramp_1  
         else:
-            control = -30000*heating
+            control = ramp_2
 
         #capping motor output
         if -30000 > control or control > 30000:
@@ -167,7 +183,7 @@ if __name__ == "__main__":
     dc = BrickDC(UID_motor, ipcon) 
     print("setting up DC")
     dc.set_drive_mode(dc.DRIVE_MODE_DRIVE_COAST)
-    dc.set_pwm_frequency(10000) # Use PWM frequency of 10 kHz
+    dc.set_pwm_frequency(15000) # Use PWM frequency of 10 kHz
     dc.set_acceleration(10000) 
     dc.set_velocity(100)
     dc.enable()
@@ -191,8 +207,8 @@ if __name__ == "__main__":
     ptc.set_temperature_callback_configuration(2000, False, "x", 0, 0)
 
     # 1 = heating, -1 = cooling
-    heating = 1
-    mode = 2
+    heating = -1
+    mode = 1
     if mode == 0:
         squarewave(heating)
     elif mode == 1:
@@ -202,7 +218,7 @@ if __name__ == "__main__":
     else:
         print("no mode")
 
-    starting_temp()
+    #starting_temp()
 
     print("shutting down")
     dc.set_velocity(0) # Stop motor before disabling motor power
