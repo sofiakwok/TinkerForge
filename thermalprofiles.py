@@ -227,7 +227,7 @@ if __name__ == "__main__":
     dc.set_drive_mode(dc.DRIVE_MODE_DRIVE_COAST)
     dc.set_pwm_frequency(15000) # Use PWM frequency of 10 kHz
     dc.set_acceleration(10000) 
-    dc.set_velocity(100)
+    dc.set_velocity(0)
     dc.enable()
 
     tir = BrickletTemperatureIRV2(UID_IR, ipcon) # Create device object
@@ -257,10 +257,9 @@ if __name__ == "__main__":
         ramp(heating)
     elif mode == 2:
         peaks(heating)
-    else:
-        print("no mode")
 
-    #starting_temp()
+    if heating == 1:
+        starting_temp()
 
     print("shutting down")
     dc.set_velocity(0) # Stop motor before disabling motor power
