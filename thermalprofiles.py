@@ -196,7 +196,7 @@ def starting_temp():
 
     pid = PID(1, 0.1, 0.1, setpoint = temp0)
 
-    while PTC_temperature != temp0:
+    while !(temp0 + 0.1 > PTC_temperature and temp0 - 0.1 < PTC_temperature):
         v = PTC_temperature
         control = pid(v)*1000
         print("control: " + str(control))
@@ -209,6 +209,9 @@ def starting_temp():
             f.write(str(time.time() - t0) + ' ' + str(PTC_temperature) + ' ' + str(control))
             f.close()
 
+        if temp0 == PTC_temperature:
+            print("temperature reached")
+            break
         if keyboard.is_pressed("enter"):
             print("ending loop")
             break
@@ -223,7 +226,6 @@ if __name__ == "__main__":
     # Don't use device before ipcon is connected
 
     dc = BrickDC(UID_motor, ipcon) 
-    print("setting up DC")
     dc.set_drive_mode(dc.DRIVE_MODE_DRIVE_COAST)
     dc.set_pwm_frequency(15000) # Use PWM frequency of 10 kHz
     dc.set_acceleration(10000) 
