@@ -1,4 +1,4 @@
-filename = Untitled16;
+filename = Untitled;
 
 time = filename.time - filename.time(1);
 
@@ -16,7 +16,7 @@ plot(time, linspace(goal_temp, goal_temp, height(time)), 'r')
 plot(time, linspace(goal_temp + 0.1, goal_temp + 0.1, height(time)), '--r')
 plot(time, linspace(goal_temp - 0.1, goal_temp - 0.1, height(time)), '--r')
 xlabel("Time (s)", 'Fontsize', 12)
-title("Temperature Convergence (2, 0.4, 0.1)", 'Fontsize', 18)
+title("Temperature Convergence (1, 0.1, 0.1)", 'Fontsize', 18)
 legend('Temperature', 'Target Temperature', '+0.1', '-0.1', 'Motor Command')
 
 %% thermal profiles
@@ -45,17 +45,17 @@ legend('Target Thermal Profile', 'Temperature', 'Motor Command')
 
 %% square wave shape
 
-filename = Untitled8;
+filename = Untitled1;
 
 time = filename.time - filename.time(1);
-t1 = 6583;
+t1 = 200;
 square_time = 7000;
-x = height(time) - t1 - square_time;
+len = 12729 - t1 - square_time;
 
-goal_temp = 35;
+goal_temp = 11;
 
 x = [linspace(filename.temp(1), goal_temp, t1), linspace(goal_temp, goal_temp, square_time), ...
-    linspace(goal_temp, filename.temp(1), x)];
+    linspace(goal_temp, filename.temp(1), len)];
 
 figure;
 plot(time, x)

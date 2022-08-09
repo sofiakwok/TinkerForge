@@ -197,7 +197,7 @@ def starting_temp():
 
     pid = PID(1, 0.1, 0.1, setpoint = temp0)
 
-    while !(temp0 + 0.1 > PTC_temperature and temp0 - 0.1 < PTC_temperature):
+    while not (temp0 + 0.1 > PTC_temperature and temp0 - 0.1 < PTC_temperature):
         v = PTC_temperature
         control = pid(v)*1000
         print("control: " + str(control))
@@ -252,8 +252,8 @@ if __name__ == "__main__":
     ptc.set_temperature_callback_configuration(2000, False, "x", 0, 0)
 
     # 1 = heating, -1 = cooling
-    heating = 1
-    mode = 2
+    heating = -1
+    mode = 0
     if mode == 0:
         squarewave(heating)
     elif mode == 1:
