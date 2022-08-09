@@ -10,6 +10,7 @@ UID_analog = "MQJ"
 
 global PTC_temperature
 global t0
+global goal_temp
 
 import cv2
 import numpy
@@ -24,21 +25,9 @@ from tinkerforge.bricklet_industrial_analog_out_v2 import BrickletIndustrialAnal
 
 from simple_pid import PID
 
-mode = 2
-if mode == 1:
-    goal_temp = 25
-else:
-    goal_temp = 32
-        
-pid = PID(2, 0.4, 0.1, setpoint = goal_temp)
-
 t0 = time.time()
 with open('data/' + str(t0) + '.txt', 'a') as f:
     f.write('time temp control')
-
-#2, 0.1, 0.15: 55 seconds
-#1, 0.1, 0.1: 30 seconds
-#1, 0.1, 0.15: 40 seconds
 
 # Callback function for object temperature callback
 def cb_object_temperature(temperature):
@@ -72,12 +61,21 @@ if __name__ == "__main__":
     ipcon.connect(HOST, PORT) # Connect to brickd
     # Don't use device before ipcon is connected
 
+    mode = 2
+    if mode == 1:
+        goal_temp = 25
+    else:
+        goal_temp = 32
+            
+    #setting Kp Kd and KI - 1, 0.1, 0.1 works best for quick convergence
+    pid = PID(1, 0.1, 0.1, setpoint = goal_temp)
+
     dc = BrickDC(UID_motor, ipcon) 
     print("setting up DC")
     dc.set_drive_mode(dc.DRIVE_MODE_DRIVE_COAST)
-    dc.set_pwm_frequency(10000) # Use PWM frequency of 10 kHz
+    dc.set_pwm_frequency(15000) # Use PWM frequency of 10 kHz
     dc.set_acceleration(10000) 
-    dc.set_velocity(100)
+    dc.set_velocity(0)
     dc.enable()
 
     tir = BrickletTemperatureIRV2(UID_IR, ipcon) # Create device object

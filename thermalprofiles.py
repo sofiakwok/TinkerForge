@@ -32,14 +32,14 @@ t0 = time.time()
 with open('data/' + str(t0) + '.txt', 'a') as f:
     f.write('time temp control')
 
-# Callback function for object temperature callback
+# Callback function for IR camera object temperature
 def cb_object_temperature(temperature):
     #print("IR Temperature: " + str(temperature/10.0) + " °C")
     global IR_temperature
 
     IR_temperature = temperature/10.0
 
-# Callback function for temperature callback
+# Callback function for PTC temperature
 def cb_temperature(temperature):
     global PTC_temperature
 
@@ -191,6 +191,7 @@ def peaks(heating):
             break
 
 def starting_temp():
+    #program to return to starting temperature of Peltier
     global temp0
     global t0
 
