@@ -45,14 +45,14 @@ legend('Target Thermal Profile', 'Temperature', 'Motor Command')
 
 %% square wave shape
 
-filename = Untitled1;
+filename = Untitled3;
 
 time = filename.time - filename.time(1);
-t1 = 200;
-square_time = 7000;
-len = 12729 - t1 - square_time;
+t1 = 2898;
+square_time = 2000;
+len = height(time) - t1 - square_time;
 
-goal_temp = 11;
+goal_temp = 16.5;
 
 x = [linspace(filename.temp(1), goal_temp, t1), linspace(goal_temp, goal_temp, square_time), ...
     linspace(goal_temp, filename.temp(1), len)];
@@ -67,16 +67,16 @@ plot(time, filename.control)
 ylim([-35000, 35000])
 xlabel("Time (s)", 'Fontsize', 12)
 ylabel("Motor Command", "Fontsize", 12)
-title("Square Wave Heating Thermal Profile", 'Fontsize', 18)
+title("Square Wave Cooling Thermal Profile", 'Fontsize', 18)
 legend('Target Thermal Profile', 'Temperature', 'Motor Command')
 
 %% double wave shape
 
-filename = Untitled11;
+filename = Untitled4;
 
 time = filename.time - filename.time(1);
 
-factor = 0.0033355;
+factor = 0.0053355;
 t1 = 7.87/factor;
 t2 = 13.44/factor;
 t3 = 18.1404/factor;
@@ -99,7 +99,7 @@ plot(time, filename.control)
 ylim([-35000, 35000])
 xlabel("Time (s)", 'Fontsize', 12)
 ylabel("Motor Command", "Fontsize", 12)
-title("Dpuble Wave Heating Thermal Profile", 'Fontsize', 18)
+title("Dpuble Wave Cooling Thermal Profile", 'Fontsize', 18)
 legend('Target Thermal Profile', 'Temperature', 'Motor Command')
 
 %% ramp shape

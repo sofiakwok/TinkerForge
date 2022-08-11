@@ -3,10 +3,10 @@
 
 HOST = "localhost"
 PORT = 4223
-UID_IR = "LsN"
+#UID_IR = "LsN"
 UID_PTC= "TQt"
 UID_motor = "6EjgEJ"
-UID_analog = "MQJ"
+#UID_analog = "MQJ"
 
 global PTC_temperature
 global IR_temperature
@@ -56,9 +56,9 @@ def squarewave(heating):
         square_2 = -20000
         square_3 = 2500
     else:
-        goal_temperature = 38
+        goal_temperature = 35
         square_1 = 15000
-        square_2 = 3000
+        square_2 = 2000
         square_3 = -20000
 
     while t < 25:
@@ -70,21 +70,24 @@ def squarewave(heating):
 
         if heating == -1:
             sign = PTC_temperature > goal_temperature
+            sign2 = PTC_temperature > temp0
         else:
             sign = PTC_temperature + 3 < goal_temperature
+            sign2 = PTC_temperature < temp0
 
         if t < 5 or (t < 10 and sign):
             control = square_1
         elif t < 15:
             control = square_2
-        else:
+        elif not sign2:
             control = square_3
+        else:
+            control = 0
 
         #capping motor output
         if -30000 > control or control > 30000:
             control = 30000 * numpy.sign(control)
 
-        print("control: " + str(control))
         dc.set_velocity(control)
 
         #writing to text file
@@ -103,7 +106,7 @@ def ramp(heating):
     global temp0
 
     if heating == -1:
-        ramp_1 = -20000
+        ramp_1 = -10000
         ramp_2 = 5000
     else:
         ramp_1 = 5000
@@ -148,17 +151,17 @@ def peaks(heating):
     t = 0
 
     if heating == -1:
-        goal_temperature = 18
+        goal_temperature = temp0 - 5
         peak_1 = -30000
         peak_2 = 3000
     else:
-        goal_temperature = 33
+        goal_temperature = temp0 + 5
         peak_1 = 20000
         peak_2 = -20000
 
     counter = 0
 
-    while t < 25:
+    while t < 30:
         #updating time elapsed
         t = time.time() - t0
         print("t: " + str(t))
@@ -167,13 +170,17 @@ def peaks(heating):
 
         if heating == -1:
             sign = PTC_temperature > goal_temperature
+            sign1 = PTC_temperature < temp0
         else:
             sign = PTC_temperature + 5 < goal_temperature
+            sign1 = PTC_temperature > temp0
 
         if sign and t < 20:
             control = peak_1
-        else:
+        elif sign1:
             control = peak_2
+        else: 
+            control = 0
 
         #capping motor output at 30000
         if -30000 > control or control > 30000:
@@ -233,15 +240,13 @@ if __name__ == "__main__":
     dc.set_velocity(0)
     dc.enable()
 
+    '''
     tir = BrickletTemperatureIRV2(UID_IR, ipcon) # Create device object
     # Register object temperature callback to function cb_object_temperature
     tir.register_callback(tir.CALLBACK_OBJECT_TEMPERATURE, cb_object_temperature)
     # Set period for object temperature callback to 1s (1000ms)
     tir.set_object_temperature_callback_configuration(2000, True, "x", 0, 0)
-
-    iao = BrickletIndustrialAnalogOutV2(UID_analog, ipcon) # Create device object
-    iao.set_voltage(5000) #in mV
-    iao.set_enabled(True)
+    '''
 
     ptc = BrickletIndustrialPTC(UID_PTC, ipcon) # Create device object
     temp0 = ptc.get_temperature()/100
@@ -253,7 +258,7 @@ if __name__ == "__main__":
 
     # 1 = heating, -1 = cooling
     heating = -1
-    mode = 0
+    mode = 2
     if mode == 0:
         squarewave(heating)
     elif mode == 1:
