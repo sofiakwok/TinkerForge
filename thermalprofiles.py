@@ -106,8 +106,8 @@ def ramp(heating):
     global temp0
 
     if heating == -1:
-        ramp_1 = -10000
-        ramp_2 = 5000
+        ramp_1 = -20000
+        ramp_2 = 3000
     else:
         ramp_1 = 5000
         ramp_2 = -30000
@@ -168,6 +168,8 @@ def peaks(heating):
 
         PTC_temperature = ptc.get_temperature()/100
 
+        '''
+        **PTC temperature based control**
         if heating == -1:
             sign = PTC_temperature > goal_temperature
             sign1 = PTC_temperature < temp0
@@ -180,6 +182,23 @@ def peaks(heating):
         elif sign1:
             control = peak_2
         else: 
+            control = 0
+        '''
+
+        if heating == -1:
+            sign = PTC_temperature < temp0
+        else:
+            sign = PTC_temperature > temp0
+
+        if t < 7.5:
+            control = peak_1
+        elif t < 11:
+            control = peak_2
+        elif t < 17.5:
+            control = peak_1
+        elif sign:
+            control = peak_2
+        else:
             control = 0
 
         #capping motor output at 30000
