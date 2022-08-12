@@ -57,7 +57,7 @@ def squarewave(heating):
     else:
         goal_temperature = 35
         square_1 = 5000
-        square_2 = 2300
+        square_2 = 2500
         square_3 = -20000
 
     while t < 25:
@@ -275,7 +275,7 @@ if __name__ == "__main__":
     ptc.set_temperature_callback_configuration(2000, False, "x", 0, 0)
 
     # 1 = heating, -1 = cooling
-    heating = -1
+    heating = 1
     mode = 2
     if mode == 0:
         squarewave(heating)
@@ -284,12 +284,12 @@ if __name__ == "__main__":
     elif mode == 2:
         peaks(heating)
 
-    if heating == 1:
-        starting_temp()
+    '''if heating == 1:
+        starting_temp()'''
 
     print("shutting down")
     dc.set_velocity(0) # Stop motor before disabling motor power
-    time.sleep(3) # Wait for motor to actually stop: velocity (100 %) / decceleration (50 %/s) = 2 s
+    time.sleep(3) # Wait for motor to actually stop: velocity (100 %) / decceleration (10000) = 3 s
     dc.disable() # Disable motor power
 
     ipcon.disconnect()
