@@ -22,8 +22,7 @@ from tinkerforge.ip_connection import IPConnection
 from tinkerforge.bricklet_temperature_ir_v2 import BrickletTemperatureIRV2
 from tinkerforge.bricklet_industrial_ptc import BrickletIndustrialPTC
 from tinkerforge.brick_dc import BrickDC
-from tinkerforge.bricklet_thermal_imaging import BrickletThermalImaging
-from tinkerforge.bricklet_industrial_analog_out_v2 import BrickletIndustrialAnalogOutV2
+#from tinkerforge.bricklet_industrial_analog_out_v2 import BrickletIndustrialAnalogOutV2
 
 from simple_pid import PID
 
@@ -57,8 +56,8 @@ def squarewave(heating):
         square_3 = 2500
     else:
         goal_temperature = 35
-        square_1 = 15000
-        square_2 = 2000
+        square_1 = 5000
+        square_2 = 2300
         square_3 = -20000
 
     while t < 25:
@@ -109,7 +108,7 @@ def ramp(heating):
         ramp_1 = -20000
         ramp_2 = 3000
     else:
-        ramp_1 = 5000
+        ramp_1 = 3000
         ramp_2 = -30000
 
     while t < 25:
@@ -156,7 +155,7 @@ def peaks(heating):
         peak_2 = 3000
     else:
         goal_temperature = temp0 + 5
-        peak_1 = 20000
+        peak_1 = 5000
         peak_2 = -20000
 
     counter = 0
